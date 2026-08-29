@@ -1,0 +1,55 @@
+# ===== 操作系统生成的垃圾文件 =====
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ===== 编辑器 / IDE =====
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== 临时文件与备份 =====
+*.tmp
+*.temp
+*.bak
+*.old
+*~$*
+
+# ===== 日志 =====
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ===== 依赖目录（当前项目未使用，预留） =====
+node_modules/
+
+# ===== 构建产物（当前项目未使用，预留） =====
+dist/
+build/
+.cache/
+
+# ===== 环境变量与密钥（务必不要提交） =====
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ===== 协作记录 =====
+# .workbuddy/ 存放本项目的协作记录与记忆，属于本地有用数据，
+# 但仓库为公开仓库时不宜外泄，故默认不提交。
+# 若希望多设备同步这些记录，删掉下面一行即可。
+.workbuddy/
