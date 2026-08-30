@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日盯盘 · Lin</title>
+  <meta name="description" content="面向新手的每日盯盘清单工具 · 仅供参考，不构成投资建议">
+  <meta property="og:title" content="每日盯盘 · Lin">
+  <meta property="og:description" content="自选股跟踪、技术信号提示、盯盘清单与复盘记录">
+  <meta property="og:url" content="https://lin.loc.cc/stock.html">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/stock.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img class="nav-avatar" src="assets/img/avatar.jpg" alt="Lin" width="32" height="32">
+        <span>Lin</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于</a></li>
+        <li><a href="K.html">K线</a></li>
+        <li><a class="active" href="stock.html">盯盘</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 状态栏：时钟 + 市场状态 + 数据源 -->
+  <header class="page-hero">
+    <div class="hero-meta">
+      <span id="marketClock">--:--:--</span>
+      <span class="dot-sep">·</span>
+      <span id="marketState" class="mkt-badge">加载中</span>
+      <span class="dot-sep">·</span>
+      <span id="dataState" class="mkt-badge">连接中</span>
+    </div>
+  </header>
+
+  <!-- 免责声明（置顶显著位置） -->
+  <div class="disclaimer-top" role="note">
+    <strong>仅供参考，不构成投资建议。</strong>
+    本页所有数据与信号均为学习用途的自动计算结果，可能存在延迟或错误，不可作为交易依据。投资有风险，决策请独立判断。
+  </div>
+
+  <!-- ===== 1. 自选股 + 行情 ===== -->
+  <div class="wrap block">
+    <div class="block-head">
+      <h2>我的自选股</h2>
+      <span class="sub">真实行情，每 6 秒自动刷新</span>
+    </div>
+
+    <div class="watch-bar">
+      <input id="codeInput" type="text" placeholder="输入 6 位股票代码，如 600519" maxlength="6"
+             inputmode="numeric" autocomplete="off" aria-label="股票代码">
+      <button class="btn-sm btn-primary" id="addBtn" type="button">添加</button>
+      <button class="btn-sm btn-plain" id="demoBtn" type="button">填入几只常见股票</button>
+    </div>
+    <!-- 操作反馈条：不用 alert，页面被嵌进 iframe 时弹窗会被浏览器静默屏蔽 -->
+    <div id="watchTip" class="watch-tip" role="status" aria-live="polite"></div>
+    <p class="hint-line">
+      支持沪深京三市与 ETF 的 6 位代码（如 600519 贵州茅台、000858 五粮液、588200 科创芯片ETF）。<br>
+      行情取自腾讯财经公开接口，通常有 15 秒左右延迟；自选股与预警设置只存在你自己的浏览器里，不会上传。
+    </p>
+
+    <div class="table-scroll">
+      <table class="quote">
+        <thead>
+          <tr>
+            <th>股票</th>
+            <th>现价</th>
+            <th>涨跌幅</th>
+            <th>成交量</th>
+            <th><span class="term" tabindex="0" data-tip="当天换手的股份占总股本的比例。数值越大说明买卖越活跃，也意味着分歧越大。">换手率</span></th>
+            <th><span class="term" tabindex="0" data-tip="把最近 N 天的收盘价做平均后连成的线。价格在均线上方通常视为偏强。">均线</span></th>
+            <th>技术信号</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="quoteBody">
+          <tr><td class="empty-row" colspan="8">还没有自选股，输入代码添加，或点「填入几只常见股票」试试</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 2. 预警设置 ===== -->
+  <div class="wrap block">
+    <div class="block-head">
+      <h2>价格预警</h2>
+      <span class="sub">触发后在下方列出，并在标题栏闪动提示</span>
+    </div>
+
+    <div class="alert-grid" id="alertGrid"></div>
+
+    <div class="alert-feed">
+      <div class="alert-feed-head">
+        <span>今日触发记录</span>
+        <span class="feed-count" id="feedCount">0 条</span>
+      </div>
+      <div id="alertFeed">
+        <div class="alert-empty">暂无触发记录</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3. 盯盘清单三时段 ===== -->
+  <div class="wrap block">
+    <div class="block-head">
+      <h2>今日盯盘清单</h2>
+      <span class="sub">当前所处时段会高亮显示，勾选状态自动保存</span>
+    </div>
+    <div class="checklist" id="checklist"></div>
+  </div>
+
+  <!-- ===== 4. 当日复盘 ===== -->
+  <div class="wrap block">
+    <div class="block-head">
+      <h2>当日复盘</h2>
+      <span class="sub" id="reviewDate">—</span>
+    </div>
+
+    <div class="review-box">
+      <div class="review-stat" id="reviewStat"></div>
+
+      <label for="reviewText" style="display:block;font-size:13px;color:var(--text-gray);margin-bottom:8px;">
+        今天的观察与反思（只存在本机浏览器里）
+      </label>
+      <textarea id="reviewText" placeholder="例如：今天大盘走弱但自选股里 XX 逆势放量，先记下来观察两天再说。&#10;避免写「明天一定涨」这类结论，多写「我看到了什么」。"></textarea>
+
+      <div class="review-actions">
+        <button class="btn-sm btn-primary" id="saveReview" type="button">保存复盘</button>
+        <button class="btn-sm btn-plain" id="exportReview" type="button">导出全部记录</button>
+        <span class="save-tip" id="saveTip">已保存</span>
+      </div>
+
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- ===== 数据源说明 ===== -->
+  <div class="src-note">
+    <b>关于数据来源：</b>行情取自<b>腾讯证券公开行情接口</b>（<code>qt.gtimg.cn</code> 实时报价 +
+    <code>web.ifzq.gtimg.cn</code> 日 K 线），由你的浏览器直接请求，本站不经过任何服务器中转，
+    也不需要登录任何账号。股票名称、现价、成交量、换手率、量比均为接口返回的真实数据；
+    均线、20 日新高新低等信号在本地基于真实历史 K 线计算。<br>
+    <b>数据延迟：</b>该接口为免费公开行情，通常有<b>十几秒到一分钟</b>的延迟，且非交易时段返回的是上一个交易日的收盘数据。
+    表格里每行都标了该笔报价的时间，请以此为准。它不适合做分秒级的短线交易参考。<br>
+    <b>为什么不用券商账号：</b>本站是公开静态托管，代码对所有人可见，任何写进前端的账号密码都等于公开。
+    自动化抓取登录态数据也违反多数行情网站的服务协议，有封号风险。
+  </div>
+
+  <!-- 返回 -->
+  <div style="text-align:center;padding:0 20px 80px;">
+    <a class="btn btn-blue" href="index.html">← 返回主页</a>
+  </div>
+
+  <!-- 页脚 -->
+  <footer>
+    <div class="brand">Lin</div>
+    <p>© 2026 Lin · 保留所有权利</p>
+    <p>本页工具仅供学习参考，不构成任何投资建议</p>
+  </footer>
+
+  <script src="assets/js/stock.js"></script>
+</body>
+</html>
