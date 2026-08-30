@@ -359,6 +359,50 @@
       text-align: center;
     }
 
+    /* ===== 嵌入式盯盘工具 ===== */
+    .feature-embed {
+      /* 工具本身内容很宽，卡片放开一点，否则表格挤成一团 */
+      max-width: 1180px;
+    }
+
+    .embed-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .embed-head h3 {
+      margin-bottom: 0;
+    }
+
+    .embed-head .feature-link {
+      font-size: 14px;
+    }
+
+    .embed-frame {
+      margin-top: 22px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .embed-frame iframe {
+      display: block;
+      width: 100%;
+      /* 初始高度只是占位，加载后由子页面通过 postMessage 汇报真实高度。
+         给个偏大的初值，避免首屏出现「先矮一下再撑开」的跳动。 */
+      height: 1900px;
+      border: 0;
+    }
+
+    @media (max-width: 900px) {
+      .embed-frame { border-radius: 14px; }
+      .embed-frame iframe { height: 2600px; }
+    }
+
     /* ===== 音乐歌品区块（酷狗风格） ===== */
     .music-wrap {
       max-width: 640px;
@@ -621,13 +665,21 @@
     <h2 class="section-title">我的作品</h2>
     <p class="section-sub">最近在做的一些事情。</p>
 
-    <!-- 每日盯盘工具 -->
-    <div class="feature">
-      <h3>每日盯盘工具</h3>
-      <p>面向新手的盯盘小工具：自选股管理、实时指标、通俗的技术信号提示、自定义预警，
-         按开盘前 / 盘中 / 收盘后三段组织当日待办，并生成复盘记录。</p>
-      <a class="feature-link" href="stock.html">打开盯盘工具 →</a>
-      <p class="holdings-note">* 演示数据，仅供学习参考，不构成任何投资建议。</p>
+    <!-- 每日盯盘工具（整个工具直接嵌在这里，可直接操作） -->
+    <div class="feature feature-embed">
+      <div class="embed-head">
+        <h3>每日盯盘工具</h3>
+        <a class="feature-link" href="stock.html" target="_blank" rel="noopener">独立窗口打开 →</a>
+      </div>
+      <p>自选股管理、真实行情指标、通俗的技术信号提示、自定义预警，
+         按开盘前 / 盘中 / 收盘后三段组织当日待办，并生成复盘记录。
+         下面就是完整工具，可直接添加股票使用。</p>
+
+      <div class="embed-frame">
+        <iframe id="stockFrame" src="stock.html?embed=1" title="每日盯盘工具"
+                loading="lazy" scrolling="no"></iframe>
+      </div>
+      <p class="holdings-note">* 行情来自公开接口，有数十秒延迟；仅供学习参考，不构成任何投资建议。</p>
     </div>
 
     <div class="feature">
@@ -748,6 +800,25 @@
     document.getElementById("partnerBtn").addEventListener("click", function () {
       document.getElementById("partnerEmpty").classList.add("loaded");
     });
+
+    /* 嵌入的盯盘工具会汇报自身高度，这里跟着调整 iframe，
+       避免出现内部滚动条或底部大片空白。 */
+    (function () {
+      var frame = document.getElementById("stockFrame");
+      if (!frame) return;
+
+      window.addEventListener("message", function (e) {
+        // 只认自己那个 iframe 发来的消息，忽略页面上其他任何 postMessage
+        if (e.source !== frame.contentWindow) return;
+        var d = e.data;
+        if (!d || d.type !== "lin-stock-height") return;
+
+        var h = parseInt(d.height, 10);
+        // 上下限兜底：万一子页面算出异常值，也不至于把首页撑成天文数字
+        if (!isFinite(h) || h < 400 || h > 8000) return;
+        frame.style.height = h + "px";
+      });
+    })();
   </script>
 
 </body>

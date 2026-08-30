@@ -13,6 +13,16 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/stock.css">
+  <script>
+    /* 被首页 iframe 嵌入时走精简模式：藏掉导航、页脚、返回按钮，去掉多余留白。
+       写在 head 里同步执行，body 渲染前 class 就已就位，避免导航闪一下再消失。 */
+    (function () {
+      var embed = /[?&]embed=1/.test(location.search);
+      // 双保险：即使漏了参数，只要处于 iframe 中就自动精简
+      try { if (window.self !== window.top) embed = true; } catch (e) { embed = true; }
+      if (embed) document.documentElement.className += ' embed';
+    })();
+  </script>
 </head>
 <body>
 
@@ -157,9 +167,14 @@
   </div>
 
   <!-- 返回 -->
-  <div style="text-align:center;padding:0 20px 80px;">
+  <div class="back-home" style="text-align:center;padding:0 20px 80px;">
     <a class="btn btn-blue" href="index.html">← 返回主页</a>
   </div>
+
+  <!-- 嵌入模式下的底部说明：iframe 里看不到页脚，免责声明不能跟着消失 -->
+  <p class="embed-foot">本工具仅供学习参考，不构成任何投资建议 ·
+    <a href="stock.html" target="_blank" rel="noopener">在新窗口打开完整页面 →</a>
+  </p>
 
   <!-- 页脚 -->
   <footer>
